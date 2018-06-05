@@ -19,15 +19,7 @@ io.on('connection', (socket) => {
     io.emit('users-changed', {
       user: socket.nickname,
       event: 'left'
-    }); 
-    io.emit('connectedUsers', {
-      users: onlineUsers,
-      event: 'online'
-    }); 
-    console.log("Online users");
-    for(var i=0; i<onlineUsers.length; i++){
-      console.log(onlineUsers[i].username+"\n");
-    }
+    });
   });
 
   socket.on('set-nickname', (nickname) => {
@@ -37,19 +29,11 @@ io.on('connection', (socket) => {
       userid: socket.id,
       username: nickname
     });
-    
+
     io.emit('users-changed', {
       user: nickname,
       event: 'joined'
     });
-    io.emit('connectedUsers', {
-      users: onlineUsers,
-      event: 'online'
-    }); 
-    console.log("Online users:");
-    for(var i=0; i<onlineUsers.length; i++){
-      console.log(onlineUsers[i].username+"\n");
-    }
     //io.emit('connectedUsers', onlineUsers);
   });
 
@@ -62,9 +46,26 @@ io.on('connection', (socket) => {
     });
   });
 
-  socket.on('chatting', function (message, sender, receiver) {
-    socket.to(receiver).emit('reciverPeer', message, socket.id, receiver);
-    socket.emit('senderPeer', message, socket.id, receiver);
+  socket.on('chat', (input) => {
+    console.log("sender : " + socket.nickname);
+    console.log("receiver : " + input.nickname);
+    console.log("message : " + input.text);
+    socket.to(input.receiver).emit('peerMessages', {
+      text: input.text,
+      from: socket.nickname,
+      to: input.nickname,
+      created: new Date()
+    });
+  })
+
+  socket.on('getonlineusers', function () {
+    io.emit('onlineusers', {
+      users: onlineUsers
+    });
+    console.log("Online users");
+    for (var i = 0; i < onlineUsers.length; i++) {
+      console.log(onlineUsers[i].username);
+    }
   })
 });
 
